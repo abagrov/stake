@@ -10,7 +10,7 @@ task("unstake", "Unstake full amount of token from protocol")
         const sender = await getWallet(args.sender);
         const staking = await getContractAt(hre, "Stake", args.contract);
 
-        const tx = await staking.connect(sender).unstake();
+        const tx = await staking.connect(sender).unstake({ gasLimit: 500_000, });
         await tx.wait();
 
         console.log("Unstaked ok");

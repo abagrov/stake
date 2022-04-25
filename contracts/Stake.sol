@@ -3,20 +3,27 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@prb/math/contracts/PRBMathUD60x18.sol";
 
 contract Stake {
-    IERC20 private stakingToken;
-    IERC20 private rewardToken;
+    using PRBMathUD60x18 for uint256;
 
-    uint256 private percentage;
-    uint256 private stakingHold;
-    uint256 private rewardHold;
+    IERC20 public stakingToken;
+    IERC20 public rewardToken;
 
+    uint256 public percentage;
+    uint256 public stakingHold;
+    uint256 public rewardHold;
+
+    uint256 private constant HUNDRED_PERCENTS = 100 * 1e18;
     address private _owner;
 
-    mapping(address => uint256) private stakings;
-    mapping(address => uint256) private stakingHolds;
-    mapping(address => uint256) private rewardHolds;
+    mapping(address => StakeInfo) private stakings;
+
+    struct StakeInfo {
+        uint256[] depositAtTimes;
+        mapping(uint256 => uint256) deposits;
+    }
 
     event Staked(uint256 amount, uint256 until);
     event Unstaked(uint256 amount);
@@ -28,7 +35,7 @@ contract Stake {
     }
 
     constructor(address _stakingToken, address _rewardToken) {
-        percentage = 1;
+        percentage = 1 * 1e18;
         stakingToken = IERC20(_stakingToken);
         rewardToken = IERC20(_rewardToken);
         stakingHold = 5 minutes;
@@ -40,37 +47,68 @@ contract Stake {
         require(_amount > 0, "Staking amount should be greater than zero.");
 
         stakingToken.transferFrom(msg.sender, address(this), _amount);
-        stakings[msg.sender] += _amount;
-        stakingHolds[msg.sender] = block.timestamp + stakingHold;
-        rewardHolds[msg.sender] = block.timestamp + rewardHold;
+        StakeInfo storage currStake = stakings[msg.sender];
+        currStake.depositAtTimes.push(block.timestamp);
+        currStake.deposits[block.timestamp] = _amount;
 
-        emit Staked(_amount, stakingHolds[msg.sender]);
+        emit Staked(_amount, block.timestamp + stakingHold);
     }
 
     function unstake() public {
-        require(stakings[msg.sender] > 0, "No tokens to unstake");
-        require(stakingHolds[msg.sender] <= block.timestamp, "It's too early");
+        StakeInfo storage currStake = stakings[msg.sender];
 
-        uint256 staking = stakings[msg.sender];
-        stakings[msg.sender] = 0;
-        stakingToken.transfer(msg.sender, staking);
+        require(currStake.depositAtTimes.length > 0, "No tokens to unstake");
+        uint256 amount = 0;
+        for (uint256 i = currStake.depositAtTimes.length; i > 0; i--) {
+            if (currStake.depositAtTimes[i - 1] + stakingHold > block.timestamp) {
+                continue;
+            }
 
-        emit Unstaked(staking);
+            amount += currStake.deposits[currStake.depositAtTimes[i - 1]];
+            currStake.deposits[currStake.depositAtTimes[i - 1]] = 0;
+            pop(i - 1, currStake.depositAtTimes);
+        }
+
+        require(amount > 0, "It's too early");
+
+        stakingToken.transfer(msg.sender, amount);
+        emit Unstaked(amount);
     }
 
     function claim() public {
-        require(rewardHolds[msg.sender] <= block.timestamp, "It's too early");
-        require(stakings[msg.sender] > 0, "No tokens staked");
+        StakeInfo storage currStake = stakings[msg.sender];
 
-        uint256 reward = (stakings[msg.sender] * percentage) / 100;
-        rewardToken.transferFrom(_owner, msg.sender, reward);
-        rewardHolds[msg.sender] = block.timestamp + rewardHold;
+        require(currStake.depositAtTimes.length > 0, "No tokens to unstake");
+        uint256 amount = 0;
 
-        emit Claimed(reward);
+        for (uint256 i = 0; i < currStake.depositAtTimes.length; i++) {
+            if (currStake.depositAtTimes[i] + rewardHold > block.timestamp) {
+                continue;
+            }
+
+            uint256 percentTimes = ((block.timestamp -
+                currStake.depositAtTimes[i]) / rewardHold) * 1e18;
+
+            amount +=
+                currStake.deposits[currStake.depositAtTimes[i]].mul(percentage.pow(percentTimes)).div(HUNDRED_PERCENTS);
+
+            currStake.depositAtTimes[i] = block.timestamp;
+
+            currStake.deposits[block.timestamp] = currStake.deposits[
+                currStake.depositAtTimes[i]
+            ];
+            currStake.deposits[currStake.depositAtTimes[i]] = 0;
+        }
+
+        require(amount > 0, "It's too early");
+
+        rewardToken.transferFrom(_owner, msg.sender, amount);
+
+        emit Claimed(amount);
     }
 
     function setPercentage(uint256 _percentage) public owner {
-        percentage = _percentage;
+        percentage = _percentage * 1e18;
     }
 
     function setStakingHold(uint256 _stakingHold) public owner {
@@ -79,5 +117,11 @@ contract Stake {
 
     function setRewardHold(uint256 _rewardHold) public owner {
         rewardHold = _rewardHold;
+    }
+
+    function pop(uint256 index, uint256[] storage array) private {
+        require(index < array.length);
+        array[index] = array[array.length - 1];
+        array.pop();
     }
 }

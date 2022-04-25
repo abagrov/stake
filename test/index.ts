@@ -92,11 +92,10 @@ describe("Staking", function () {
     const [amount, until,] = stakedEvent.args;
 
     expect(amount).to.be.equal(stakingAmount);
-    expect(until.toNumber()).to.be.greaterThan(Date.now() / 1000);
   });
 
   it("Check Unstaked event", async function () {
-    const newStakingHold = 3 * 60;  
+    const newStakingHold = 3 * 60;
     await stakingContract.connect(owner).setStakingHold(newStakingHold);
     await stakingTokenContract.approve(stakingContract.address, stakingAmount);
     const initialBalance = await stakingTokenContract.balanceOf(user1.address);
@@ -117,7 +116,7 @@ describe("Staking", function () {
     expect(amount).to.be.equal(stakingAmount);
   });
 
-  it("Check that user can get reward after hold", async function () {
+  it("10. Check that user can get reward after hold", async function () {
     await stakingTokenContract.approve(stakingContract.address, stakingAmount);
 
     const initialReward = await rewardTokenContract.balanceOf(user1.address);
@@ -127,16 +126,18 @@ describe("Staking", function () {
 
     expect(initialReward).to.equal(rewardAfterStake);
 
-    await network.provider.send("evm_increaseTime", [defaultRewardHold]); 
+    await network.provider.send("evm_increaseTime", [defaultRewardHold]);
     await stakingContract.claim();
 
     const rewardAfterClaim = await rewardTokenContract.balanceOf(user1.address);
+    
+    console.log(rewardAfterClaim, initialReward, stakingAmount * defaultPercentage / 100);
 
     expect(rewardAfterClaim - initialReward).to.be.equal(stakingAmount * defaultPercentage / 100);
   });
 
   it("Check that user can get reward after hold changed by owner", async function () {
-    const newRewardHold = 3 * 60;  
+    const newRewardHold = 3 * 60;
     await stakingContract.connect(owner).setRewardHold(newRewardHold);
 
     await stakingTokenContract.approve(stakingContract.address, stakingAmount);
@@ -148,7 +149,7 @@ describe("Staking", function () {
 
     expect(initialReward).to.equal(rewardAfterStake);
 
-    await network.provider.send("evm_increaseTime", [newRewardHold]); 
+    await network.provider.send("evm_increaseTime", [newRewardHold]);
     await stakingContract.claim();
 
     const rewardAfterUnstake = await rewardTokenContract.balanceOf(user1.address);
@@ -164,7 +165,7 @@ describe("Staking", function () {
     const initialReward = await rewardTokenContract.balanceOf(user1.address);
     await stakingContract.stake(stakingAmount);
 
-    await network.provider.send("evm_increaseTime", [defaultRewardHold]); 
+    await network.provider.send("evm_increaseTime", [defaultRewardHold]);
     await stakingContract.claim();
 
     const rewardAfterClaim = await rewardTokenContract.balanceOf(user1.address);

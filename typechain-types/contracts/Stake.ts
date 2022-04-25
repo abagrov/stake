@@ -29,24 +29,46 @@ import type {
 export interface StakeInterface extends utils.Interface {
   functions: {
     "claim()": FunctionFragment;
+    "percentage()": FunctionFragment;
+    "rewardHold()": FunctionFragment;
+    "rewardToken()": FunctionFragment;
     "setPercentage(uint256)": FunctionFragment;
     "setRewardHold(uint256)": FunctionFragment;
     "setStakingHold(uint256)": FunctionFragment;
     "stake(uint256)": FunctionFragment;
+    "stakingHold()": FunctionFragment;
+    "stakingToken()": FunctionFragment;
     "unstake()": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
       | "claim"
+      | "percentage"
+      | "rewardHold"
+      | "rewardToken"
       | "setPercentage"
       | "setRewardHold"
       | "setStakingHold"
       | "stake"
+      | "stakingHold"
+      | "stakingToken"
       | "unstake"
   ): FunctionFragment;
 
   encodeFunctionData(functionFragment: "claim", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "percentage",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "rewardHold",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "rewardToken",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "setPercentage",
     values: [BigNumberish]
@@ -60,9 +82,23 @@ export interface StakeInterface extends utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "stake", values: [BigNumberish]): string;
+  encodeFunctionData(
+    functionFragment: "stakingHold",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "stakingToken",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "unstake", values?: undefined): string;
 
   decodeFunctionResult(functionFragment: "claim", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "percentage", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "rewardHold", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "rewardToken",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "setPercentage",
     data: BytesLike
@@ -76,6 +112,14 @@ export interface StakeInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "stake", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "stakingHold",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "stakingToken",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "unstake", data: BytesLike): Result;
 
   events: {
@@ -142,6 +186,12 @@ export interface Stake extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    percentage(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    rewardHold(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    rewardToken(overrides?: CallOverrides): Promise<[string]>;
+
     setPercentage(
       _percentage: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -162,6 +212,10 @@ export interface Stake extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    stakingHold(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    stakingToken(overrides?: CallOverrides): Promise<[string]>;
+
     unstake(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -170,6 +224,12 @@ export interface Stake extends BaseContract {
   claim(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
+
+  percentage(overrides?: CallOverrides): Promise<BigNumber>;
+
+  rewardHold(overrides?: CallOverrides): Promise<BigNumber>;
+
+  rewardToken(overrides?: CallOverrides): Promise<string>;
 
   setPercentage(
     _percentage: BigNumberish,
@@ -191,12 +251,22 @@ export interface Stake extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  stakingHold(overrides?: CallOverrides): Promise<BigNumber>;
+
+  stakingToken(overrides?: CallOverrides): Promise<string>;
+
   unstake(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   callStatic: {
     claim(overrides?: CallOverrides): Promise<void>;
+
+    percentage(overrides?: CallOverrides): Promise<BigNumber>;
+
+    rewardHold(overrides?: CallOverrides): Promise<BigNumber>;
+
+    rewardToken(overrides?: CallOverrides): Promise<string>;
 
     setPercentage(
       _percentage: BigNumberish,
@@ -214,6 +284,10 @@ export interface Stake extends BaseContract {
     ): Promise<void>;
 
     stake(_amount: BigNumberish, overrides?: CallOverrides): Promise<void>;
+
+    stakingHold(overrides?: CallOverrides): Promise<BigNumber>;
+
+    stakingToken(overrides?: CallOverrides): Promise<string>;
 
     unstake(overrides?: CallOverrides): Promise<void>;
   };
@@ -234,6 +308,12 @@ export interface Stake extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    percentage(overrides?: CallOverrides): Promise<BigNumber>;
+
+    rewardHold(overrides?: CallOverrides): Promise<BigNumber>;
+
+    rewardToken(overrides?: CallOverrides): Promise<BigNumber>;
+
     setPercentage(
       _percentage: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -253,6 +333,10 @@ export interface Stake extends BaseContract {
       _amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
+
+    stakingHold(overrides?: CallOverrides): Promise<BigNumber>;
+
+    stakingToken(overrides?: CallOverrides): Promise<BigNumber>;
 
     unstake(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -264,6 +348,12 @@ export interface Stake extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    percentage(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    rewardHold(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    rewardToken(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     setPercentage(
       _percentage: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -283,6 +373,10 @@ export interface Stake extends BaseContract {
       _amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
+
+    stakingHold(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    stakingToken(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     unstake(
       overrides?: Overrides & { from?: string | Promise<string> }

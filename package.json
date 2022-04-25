@@ -27,6 +27,7 @@
   "dependencies": {
     "@nomiclabs/hardhat-etherscan": "^3.0.3",
     "@openzeppelin/contracts": "^4.5.0",
+    "@prb/math": "^2.5.0",
     "@typechain/hardhat": "^6.0.0",
     "@uniswap/sdk": "^3.0.3",
     "@uniswap/v2-core": "^1.0.1",

@@ -10,7 +10,7 @@ task("claim", "Claim reward from protocol")
         const sender = await getWallet(args.sender);
         const staking = await getContractAt(hre, "Stake", args.contract);
 
-        const tx = await staking.connect(sender).claim();
+        const tx = await staking.connect(sender).claim({ gasLimit: 500_000, });
         await tx.wait();
 
         console.log("Claimed ok");
